@@ -1,0 +1,37 @@
+{
+  "name": "react-quizy",
+  "version": "0.1.0",
+  "description": "React Component rendering quiz",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "webpack-dev-server --config webpack.dev.config.js  --port 3500"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/duongtdn/react-quizy.git"
+  },
+  "keywords": [
+    "react",
+    "quiz"
+  ],
+  "author": "duongtdn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/duongtdn/react-quizy/issues"
+  },
+  "homepage": "https://github.com/duongtdn/react-quizy#readme",
+  "dependencies": {
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.5",
+    "webpack": "^4.29.5",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.1.14"
+  }
+}
