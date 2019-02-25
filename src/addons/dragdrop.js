@@ -18,7 +18,7 @@ export class DragZone extends Component {
   }
   render() {
     return (
-      <div className={this.props.className || 'w3-container w3-border w3-border-grey w3-padding'} style={{position: 'relative'}}>
+      <div className={this.props.className} style={{position: 'relative'}}>
         {this.renderChildren()}
       </div>
     )
