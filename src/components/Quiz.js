@@ -15,11 +15,11 @@ export default class Quiz extends Component {
       </div>
     )
   }
-  renderProblem() {
+  renderProblem() {    
     const problem = this.props.data.problem
     if (!problem) {
       throw new Error('Invalid data passed to Quiz. Missing problem')
     }
-    return deserialize(problem, this.props.addons)
+    return deserialize(problem, this.props.addons, this.props.updateAnswers)
   }
 }
