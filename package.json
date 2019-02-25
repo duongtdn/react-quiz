@@ -4,7 +4,7 @@
   "description": "React Component rendering quiz",
   "main": "dist/index.js",
   "scripts": {
-    "start": "webpack-dev-server --config webpack.dev.config.js  --port 3500"
+    "start": "webpack-dev-server --config webpack.dev.config.js  --port 3500 --host 0.0.0.0 --watch-poll"
   },
   "repository": {
     "type": "git",
