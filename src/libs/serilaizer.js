@@ -38,6 +38,9 @@ export function deserialize(data, addons, updateAnswersFn) {
   const tree = JSON.parse(data)  
   const children = tree.children.map(el => _recursiveCreateElement(el))
   const type = addons[tree.type] || tree.type
+  if (tree.props.updateAnswers) {
+    tree.props.updateAnswers = updateAnswersFn
+  }
   return React.createElement(type, tree.props, children)
 
   function _recursiveCreateElement(el) {      

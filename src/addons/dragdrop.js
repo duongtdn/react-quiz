@@ -12,6 +12,7 @@ export class DragZone extends Component {
     this.itemsIndexes = {}
     this.itemsRel = {}
     this.dragItems = []
+    this.dragHolders = {}
   }
   componentDidMount() {
     this.setState({}) // forced render
@@ -37,18 +38,33 @@ export class DragZone extends Component {
     this.dragItems = this.dragItems.concat(dragItems)
   }
   renderChildren() {
-    return React.Children.map(this.props.children, child => {
-      // bind props to child
-      if (child.type && typeof child.typename && child.type.name === 'DragHolder') {
-        return React.cloneElement(child, {
-          items: this.holders[child.props.id],
+    // I should move this function to a lib as many addons will need it
+    const cloneElementRecursively = (el) => {
+      if (!el.type) {
+        return el
+      }
+      if (el.type && typeof el.typename && el.type.name === 'DragHolder') {
+        const dragHolder = React.cloneElement(el, {
+          items: this.holders[el.props.id],
           updateChildList: (holder, children) => this.updateChildList(holder, children),
           onDroppedItem: (holder, item) => this.droppedItem(holder, item)
         })
-      } else {
-        return child
+        this.dragHolders[el.props.id] = dragHolder
+        return dragHolder
       }
-    }) 
+      let children = []
+      if (el.props.children) {
+        children = React.Children.map(el.props.children, child => cloneElementRecursively(child))
+      }
+      if (children.length > 0) {
+        return React.cloneElement(el, {}, children)
+      } else {
+        return el
+      }
+    }
+
+    return React.Children.map(this.props.children, child => cloneElementRecursively(child))
+
   }
   droppedItem(holder, item) {
     // check if drop to the same holder
@@ -82,17 +98,15 @@ export class DragZone extends Component {
       }
     }
 
-    const { dropEffect } = React.Children.map(this.props.children, child => {
-      if (child.type && child.type.name && child.type.name === 'DragHolder' && child.props.id === this.itemsIndexes[item]) {
-        return child
+    let dropEffect, dropLimit
+    for (let id in this.dragHolders) {
+      if (id === this.itemsIndexes[item]) {
+        dropEffect = this.dragHolders[id].props.dropEffect
       }
-    })[0].props
-
-    const { dropLimit } = React.Children.map(this.props.children, child => {
-      if (child.type && child.type.name && child.type.name === 'DragHolder' && child.props.id === holder) {
-        return child
+      if (id === holder) {
+        dropLimit = this.dragHolders[id].props.dropLimit
       }
-    })[0].props
+    }
 
     // push dropped item to new holder if not exceed limit
     if (!dropLimit || dropLimit > targetHolder.length) {
@@ -124,11 +138,13 @@ export class DragZone extends Component {
     }
   }
   updateAnswers() {
-    const answerables = React.Children.map(this.props.children, child => {
-      if (child.type && child.type.name && child.type.name === 'DragHolder' && child.props.answerable) {
-        return child.props.id
+    const answerables = []
+    for (let id in this.dragHolders) {
+      const dragHolder = this.dragHolders[id]
+      if (dragHolder.props.answerable) {
+        answerables.push(id)
       }
-    })
+    }
     const answers = {}
     for (let holder in this.holders) {
       if (answerables.indexOf(holder) !== -1) {
