@@ -76,7 +76,8 @@ export class DragZone extends Component {
         this.holders[this.itemsIndexes[item]] = sourceHolder.filter(_item => _item.props._dragItemId !== item)
         delete this.itemsIndexes[item]
         delete this.itemsRel[item]
-        this.setState({ })
+        // updating answers to parent and force rerender
+        this.updateAnswers().setState({ })
         return
       }
     }
@@ -118,11 +119,24 @@ export class DragZone extends Component {
         this.holders[this.itemsIndexes[item]] = sourceHolder.filter(_item => _item.props._dragItemId !== item)
         this.itemsIndexes[item] = holder
       }
-      this.setState({ })
-      // updating answers to parent
-      const answers = targetHolder.map(child => child.props.value)
-      this.props.updateAnswers && this.props.updateAnswers({holder: answers})
+      // updating answers to parent and force rerender
+      this.updateAnswers().setState({ })
     }
+  }
+  updateAnswers() {
+    const answerables = React.Children.map(this.props.children, child => {
+      if (child.type && child.type.name && child.type.name === 'DragHolder' && child.props.answerable) {
+        return child.props.id
+      }
+    })
+    const answers = {}
+    for (let holder in this.holders) {
+      if (answerables.indexOf(holder) !== -1) {
+        answers[holder] = this.holders[holder].map(child => child.props.value)
+      }        
+    }      
+    this.props.updateAnswers && this.props.updateAnswers(answers)
+    return this
   }
 }
 
