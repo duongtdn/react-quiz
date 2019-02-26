@@ -231,7 +231,7 @@ export class DragHolder extends Component {
   constructor(props) {
     super(props)
     this.state = {
-
+      active: false
     }
     this.onItemDroppedHere = this.onItemDroppedHere.bind(this)
     this.onDragOver = this.onDragOver.bind(this)
@@ -243,6 +243,9 @@ export class DragHolder extends Component {
   }
   render() {
     let _baseClassName = this.props.className || 'w3-container w3-border w3-border-grey w3-padding'
+    if (this.state.active) {
+      _baseClassName += ' w3-pale-green'
+    }
     return (
       <div  className={_baseClassName}
             style={{display: 'inline-block', width: this.props.width, height: this.props.height, ...this.props.style}}
@@ -264,10 +267,10 @@ export class DragHolder extends Component {
     e.preventDefault()
   }
   onDragEntered(e) {
-
+    this.setState({ active: true })
   }
   onDragLeaved(e) {
-
+    this.setState({ active: false })
   }
 }
 
