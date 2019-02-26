@@ -14,6 +14,7 @@ export class DragZone extends Component {
     this.itemsRel = {}
     this.dragItems = []
     this.dragHolders = {}
+    this.escapeDragEnd = {}
   }
   componentDidMount() {
     this.setState({}) // forced render
@@ -77,6 +78,10 @@ export class DragZone extends Component {
     and update relation array of origin. --> should if item is cloned to it origin holder?
   */
   dragEnd(item) {
+    if (this.escapeDragEnd[item]) {
+      this.escapeDragEnd[item] = false
+      return
+    }
     const relItem = this.itemsRel[item]
     // items is copy from origin to a holder
     if (relItem && Object.prototype.toString.call(relItem) === '[object Array]') {
@@ -113,6 +118,7 @@ export class DragZone extends Component {
   droppedItem(holder, item) {   
     // check if drop to the same holder
     if (holder === this.itemsIndexes[item]) {
+      this.escapeDragEnd[item] = true
       return
     }
 
@@ -123,10 +129,12 @@ export class DragZone extends Component {
       const relItem = this.itemsRel[item]
       // check if holder contain a copied version of this item
       if (Object.prototype.toString.call(relItem) === '[object Array]' && relItem.some(_item => this.itemsIndexes[_item] === holder)) {
+        this.escapeDragEnd[item] = true
         return
       }
       // check if this item was copied from an origin item which already have a copied version in this holder
       if (relItem.origin && this.itemsRel[relItem.origin].some(_item => this.itemsIndexes[_item] === holder)) {
+        this.escapeDragEnd[item] = true
         return
       }
       // check if this holder is the holder of origin item
