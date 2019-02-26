@@ -91,6 +91,10 @@ export class DragZone extends Component {
     // item is moved from a holder to undropable zone
     // push back item to its origin holder & remove from the source holder    
     if (!relItem) {
+      if (this.itemsIndexes[item] === this.itemsOriginHolders[item]) {
+        // drag item from its origin and dropped, no action needed
+        return
+      }
       const originHolder = this.holders[this.itemsOriginHolders[item]]
       const droppedItem = sourceHolder.filter(_item => _item.props._dragItemId === item)[0]
       
