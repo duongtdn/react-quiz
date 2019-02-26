@@ -179,6 +179,25 @@ export class DragZone extends Component {
       }
       // updating answers to parent and force rerender
       this.updateAnswers().setState({ })
+    } else {
+      if (dropEffect && dropEffect.toLowerCase() === 'copy') {
+        // prevent copy it dropLimit is exceed, simply return
+        return
+      }
+      // extract dropped item
+      const droppedItem = sourceHolder.filter(_item => _item.props._dragItemId === item)[0]
+      // extract swap item
+      const swapItem = targetHolder.pop()
+      // swap items
+      targetHolder.push(React.cloneElement(droppedItem)) // clone item so that dropEnd event will not be fired
+      this.holders[this.itemsIndexes[item]] = sourceHolder.filter(_item => _item.props._dragItemId !== item)
+      this.holders[this.itemsIndexes[item]].push(swapItem)      
+      // swap indexes also
+      this.itemsIndexes[swapItem.props._dragItemId] = this.itemsIndexes[item]
+      this.itemsIndexes[item] = holder
+
+      // updating answers to parent and force rerender
+      this.updateAnswers().setState({ })
     }
   }
   updateAnswers() {
