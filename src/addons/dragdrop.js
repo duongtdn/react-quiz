@@ -10,6 +10,7 @@ export class DragZone extends Component {
     }
     this.holders = {}
     this.itemsIndexes = {}
+    this.itemsOriginHolders = {}
     this.itemsRel = {}
     this.dragItems = []
     this.dragHolders = {}
@@ -29,13 +30,15 @@ export class DragZone extends Component {
       if (child.type && typeof child.type.name && child.type.name === 'DragItem') {
         const _dragItemId = Math.random().toString(36).substr(2,9)
         this.itemsIndexes[_dragItemId] = holder
+        this.itemsOriginHolders[_dragItemId] = holder
         return React.cloneElement(child, {
-          _dragItemId
+          _dragItemId,
+          onDragEnd: (item) => this.dragEnd(item)
         })
       }
     })
     this.holders[holder] = dragItems || []
-    this.dragItems = this.dragItems.concat(dragItems)
+    this.dragItems.push(dragItems)
   }
   renderChildren() {
     // I should move this function to a lib as many addons will need it
@@ -66,7 +69,44 @@ export class DragZone extends Component {
     return React.Children.map(this.props.children, child => cloneElementRecursively(child))
 
   }
-  droppedItem(holder, item) {
+  /*
+    since if item is moved to a holder, it will be destroyed from origin holder (there fore event will not fired) and cloned into target holder,
+    the event is only fired if dropEffect is copy or item is NOT dropped into a DragHolder
+    if dropEffect is copy & item is dropped into a holder, there will be items in its relation array. In this case, we can simply ignore
+    if dropEffect is move, then event is fired means item is dropped outside any DragHolder, check if item does exist, then we can removed this clone item
+    and update relation array of origin. --> should if item is cloned to it origin holder?
+  */
+  dragEnd(item) {
+    const relItem = this.itemsRel[item]
+    // items is copy from origin to a holder
+    if (relItem && Object.prototype.toString.call(relItem) === '[object Array]') {
+      return
+    }
+    const sourceHolder = this.holders[this.itemsIndexes[item]]
+    // copied item is drop from a holder to undropable zone
+    if (relItem && relItem.origin) {
+      this.holders[this.itemsIndexes[item]] = sourceHolder.filter(_item => _item.props._dragItemId !== item)
+      delete this.itemsIndexes[item]      
+    }
+    // item is moved from a holder to undropable zone
+    // push back item to its origin holder & remove from the source holder    
+    if (!relItem) {
+      const originHolder = this.holders[this.itemsOriginHolders[item]]
+      const droppedItem = sourceHolder.filter(_item => _item.props._dragItemId === item)[0]
+      
+      originHolder.push(droppedItem)
+      this.holders[this.itemsIndexes[item]] = sourceHolder.filter(_item => _item.props._dragItemId !== item)
+
+      this.itemsIndexes[item] = this.itemsOriginHolders[item]
+                 
+    }
+    
+    // as item is deleted or moved back to its origin
+    delete this.itemsRel[item] 
+    // updating answers to parent and force rerender
+    this.updateAnswers().setState({ })
+  }
+  droppedItem(holder, item) {   
     // check if drop to the same holder
     if (holder === this.itemsIndexes[item]) {
       return
@@ -234,6 +274,7 @@ export class DragItem extends Component {
     e.dataTransfer.setData("text", this.props._dragItemId)
   }
   endDragging(e) {
+    this.props.onDragEnd && this.props.onDragEnd(this.props._dragItemId)
     this.setState({ dragging: false })
   }
 }
