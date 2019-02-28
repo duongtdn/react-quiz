@@ -192,6 +192,14 @@ export class DragZone extends Component {
         // prevent copy it dropLimit is exceed, simply return
         return
       }
+      // check if sourceHolder already contain a similar swap item
+      const swapItemId = targetHolder[targetHolder.length-1].props._dragItemId
+      const relItem = this.itemsRel[swapItemId]
+      if (relItem.origin && 
+          sourceHolder.some(item => this.itemsRel[item.props._dragItemId] && this.itemsRel[item.props._dragItemId].origin && this.itemsRel[item.props._dragItemId].origin === relItem.origin )) {
+        this.escapeDragEnd[item] = true
+        return
+      }
       // extract dropped item
       const droppedItem = sourceHolder.filter(_item => _item.props._dragItemId === item)[0]
       // extract swap item
