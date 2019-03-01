@@ -1,7 +1,7 @@
 {
   "name": "react-quiz",
   "version": "0.1.0",
-  "description": "React Component rendering quiz",
+  "description": "React Component rendering quiz, not publish to npm",
   "main": "dist/index.js",
   "scripts": {
     "clean": "rm -rf dist/",
