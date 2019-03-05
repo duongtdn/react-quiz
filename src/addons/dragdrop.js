@@ -5,8 +5,7 @@ import React, { Component } from 'react'
 export class DragZone extends Component {
   constructor(props) {
     super(props)
-    this.setDragItemPosition = {}
-    this.dragItemsPosition = {}
+    this.dragItems = {}
     this.activeDragItem = null
     this.mouse = null
     const methods = [
@@ -50,9 +49,8 @@ export class DragZone extends Component {
             __id: Math.random().toString(36).substr(2,9),
             onDragStart: (id) => this.activeDragItem = id,
             onDragEnd: (id) => this.activeDragItem = null,
-            onMounted: (id, position, setPositionfn) => {
-              this.dragItemsPosition[id] = position
-              this.setDragItemPosition[id] = setPositionfn
+            onMounted: (id, position, setPositionfn, size) => {
+              this.dragItems[id] = { position, size, setPosition: function(){setPositionfn(this.position)} }
             }
           }, children)
         } else {
@@ -71,15 +69,16 @@ export class DragZone extends Component {
     if (!this.activeDragItem) {
       return
     }
-    const currPosition = this.dragItemsPosition[this.activeDragItem]
+    const draggingItem = this.dragItems[this.activeDragItem]
+    const currPosition = draggingItem.position
     const offset = { left: e.pageX - this.mouse.left , top: e.pageY - this.mouse.top }
     const newPosition = { 
       left: currPosition.left + offset.left, 
       top: currPosition.top + offset.top
     }
     this.mouse = { left: e.pageX, top: e.pageY}
-    this.dragItemsPosition[this.activeDragItem] = newPosition
-    this.setDragItemPosition[this.activeDragItem](newPosition)
+    draggingItem.position = newPosition
+    draggingItem.setPosition()
   }
 }
 
@@ -108,7 +107,8 @@ export class DragItem extends Component {
     const node = this.myRef.current
     this.zIndex = node.style.zIndex
     const position = { left: node.offsetLeft, top: node.offsetTop }
-    this.props.onMounted && this.props.onMounted(this.props.__id, position, this.setPosition)
+    const size = {width: node.offsetWidth, height: node.offsetHeight}
+    this.props.onMounted && this.props.onMounted(this.props.__id, position, this.setPosition, size)
   }
 
   render() {
