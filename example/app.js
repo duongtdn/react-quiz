@@ -75,8 +75,8 @@ class App extends Component {
         {/* <Quiz data={data} addons={addons} updateAnswers = { ans => console.log(ans) } />         */}
         <DragZone className='w3-container w3-border w3-border-grey w3-padding' width='700px' height='500px'>
           <div>
-            <DragItem> <div style={{background: 'red', width: '100px', height: '100px'}}> Drag Me </div> </DragItem>
-            <DragItem left='80px' > <div style={{background: 'blue', width: '100px', height: '100px'}}> Drag Me </div> </DragItem>
+            <DragItem> <div className="w3-container w3-red" style={{width: '100px', height: '100px'}}> Drag Me </div> </DragItem>
+            <DragItem left='120px' > <div className="w3-container w3-blue" style={{width: '150px', height: '100px'}}> Drag Me </div> </DragItem>
           </div>
           <DropHolder width='350px' height='120px' top='200px' />
         </DragZone>
