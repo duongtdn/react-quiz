@@ -7,10 +7,12 @@ export class DragZone extends Component {
     super(props)
     this.dragItems = {}
     this.activeDragItem = null
+    this.dropHolders = {}
     this.mouse = null
     const methods = [
       'handleMouseDown',
       'handleMouseMove',
+      'handleDragEnd'
     ]
     methods.forEach(method => this[method] = this[method].bind(this))
   }
@@ -39,6 +41,15 @@ export class DragZone extends Component {
       if (!el.type) {
         return el
       }
+      if (el.type && el.type.name && el.type.name === 'DropHolder') {
+        // DropHolder has no child
+        return React.cloneElement(el, {
+          __id: Math.random().toString(36).substr(2,9),
+          onMounted: (id, position, size, onDragEnterFn, onDragLeaveFn, onDropFn) => {
+            this.dropHolders[id] = { position, size, onDragEnter: onDragEnterFn, onDragLeave: onDragLeaveFn, onDrop: onDropFn }
+          }
+        })
+      }
       let children = []
       if (el.props.children) {
         children = React.Children.map(el.props.children, child => cloneElementRecursively(child))
@@ -48,7 +59,7 @@ export class DragZone extends Component {
           return React.cloneElement(el, {
             __id: Math.random().toString(36).substr(2,9),
             onDragStart: (id) => this.activeDragItem = id,
-            onDragEnd: (id) => this.activeDragItem = null,
+            onDragEnd: this.handleDragEnd,
             onMounted: (id, position, setPositionfn, size) => {
               this.dragItems[id] = { position, size, setPosition: function(){setPositionfn(this.position)} }
             }
@@ -70,6 +81,7 @@ export class DragZone extends Component {
       return
     }
     const draggingItem = this.dragItems[this.activeDragItem]
+    // update position
     const currPosition = draggingItem.position
     const offset = { left: e.pageX - this.mouse.left , top: e.pageY - this.mouse.top }
     const newPosition = { 
@@ -79,6 +91,41 @@ export class DragZone extends Component {
     this.mouse = { left: e.pageX, top: e.pageY}
     draggingItem.position = newPosition
     draggingItem.setPosition()
+    // calculate wether drag is over a DropHolder
+    const center = {
+      horizontal: newPosition.top + draggingItem.size.height/2,
+      vertical: newPosition.left + draggingItem.size.width/2
+    }
+    for (let id in this.dropHolders) {
+      const dropHolder = this.dropHolders[id]
+      const threshold = {
+        upper: dropHolder.position.top, bottom: dropHolder.position.top + dropHolder.size.height,
+        left: dropHolder.position.left, right: dropHolder.position.left + dropHolder.size.width
+      }
+      if (center.horizontal > threshold.upper && center.horizontal < threshold.bottom &&
+          center.vertical > threshold.left && center.vertical < threshold.right) {
+        if (!dropHolder.active) {
+          dropHolder.active = true
+          dropHolder.onDragEnter()
+        }        
+      } else {
+        if (dropHolder.active) {
+          dropHolder.active = false
+          dropHolder.onDragLeave()
+        }       
+      }
+    }
+    
+  }
+  handleDragEnd(id) {
+    this.activeDragItem = null
+    for (let id in this.dropHolders) {
+      const dropHolder = this.dropHolders[id]
+      if (dropHolder.active) {
+        dropHolder.active = false
+        dropHolder.onDrop()
+      }
+    }
   }
 }
 
@@ -160,15 +207,34 @@ export class DragItem extends Component {
 export class DropHolder extends Component {
   constructor(props) {
     super(props)
+    this.state = {
+      isDragOver: false
+    }
+    this.myRef = React.createRef()
+    const methods = [
+      'onDragEnter',
+      'onDragLeave',
+      'onDrop'
+    ]
+    methods.forEach(method => this[method] = this[method].bind(this))
+  }
+  componentDidMount() {
+    const node = this.myRef.current
+    const position = { left: node.offsetLeft, top: node.offsetTop }
+    const size = {width: node.offsetWidth, height: node.offsetHeight}
+    this.props.onMounted && this.props.onMounted(this.props.__id, position, size, this.onDragEnter, this.onDragLeave, this.onDrop)
   }
   render() {
     let _baseClassName = this.props.className || 'w3-container w3-border w3-border-grey w3-padding'
+    if (this.state.isDragOver) {
+      _baseClassName += ' w3-pale-blue'
+    }
     const style = {
       position: 'absolute',
       zIndex: -1,
       width: this.props.width, 
       height: this.props.height, 
-      ...this.props.style
+      ...this.props.style,
     }
     if (this.props.left) {
       style.left = this.props.left
@@ -176,15 +242,22 @@ export class DropHolder extends Component {
     if (this.props.top) {
       style.top = this.props.top
     }
-    // if (this.state.active) {
-    //   _baseClassName += ' w3-pale-green'
-    // }
     return (
       <div  className={_baseClassName}
             style={ style }
+            ref={this.myRef}
       >
         {this.props.items}
       </div>
     )
+  }
+  onDragEnter() {
+    this.setState({ isDragOver: true })
+  }
+  onDragLeave() {
+    this.setState({ isDragOver: false })
+  }
+  onDrop() {
+    this.setState({ isDragOver: false })
   }
 }
