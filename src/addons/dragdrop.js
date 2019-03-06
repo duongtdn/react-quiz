@@ -61,7 +61,7 @@ export class DragZone extends Component {
             onDragStart: (id) => this.activeDragItem = id,
             onDragEnd: this.handleDragEnd,
             onMounted: (id, position, setPositionfn, size) => {
-              this.dragItems[id] = { position, size, setPosition: function(){setPositionfn(this.position)} }
+              this.dragItems[id] = { position, size, updatePosition: function(){setPositionfn(this.position)} }
             }
           }, children)
         } else {
@@ -90,7 +90,7 @@ export class DragZone extends Component {
     }
     this.mouse = { left: e.pageX, top: e.pageY}
     draggingItem.position = newPosition
-    draggingItem.setPosition()
+    draggingItem.updatePosition()
     // calculate wether drag is over a DropHolder
     const center = {
       horizontal: newPosition.top + draggingItem.size.height/2,
@@ -118,14 +118,34 @@ export class DragZone extends Component {
     
   }
   handleDragEnd(id) {
+    const draggingItem = this.dragItems[this.activeDragItem]
     this.activeDragItem = null
-    for (let id in this.dropHolders) {
-      const dropHolder = this.dropHolders[id]
-      if (dropHolder.active) {
-        dropHolder.active = false
-        dropHolder.onDrop()
-      }
+    const dropHolder = this.dropHolders[Object.keys(this.dropHolders).filter(id => this.dropHolders[id].active)[0]]
+    if (dropHolder) {
+      const position = this._calDropItemPosition(dropHolder)
+      draggingItem.position = position
+      draggingItem.updatePosition()
+      dropHolder.active = false
+      dropHolder.onDrop()
     }
+  }
+  _renderVirtualDropHolder(enable, draggingItem, dropHolder) {
+    if (!enable) {
+      return null
+    }
+    const position = { top: dropHolder.position.top + 10, left: dropHolder.position.left + 10 }
+    const size = { width: draggingItem.size.width, height: draggingItem.size.height }
+    const style = {
+      position: 'absolute',
+      width: size.width + 'px', height: size.height + 'px',
+      top: position.top + 'px', left: position.left + 'px'
+    }
+    return (
+      <div className = "w3-border w3-border-grey w3-pale-red" style = {style} />
+    )
+  }
+  _calDropItemPosition(dropHolder) {
+    return { top: dropHolder.position.top + 10, left: dropHolder.position.left + 10 }
   }
 }
 
