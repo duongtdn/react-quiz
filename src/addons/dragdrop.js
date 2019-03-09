@@ -83,6 +83,7 @@ export class DragZone extends Component {
   }
   handleMouseDown(e) {
     this.mouse = { left: e.pageX, top: e.pageY}
+    this.handleMouseMove(e) // call mouse move to update dropHolder active
   }
   handleMouseMove(e) {
     if (!this.activeDragItem) {
@@ -96,10 +97,10 @@ export class DragZone extends Component {
       left: currPosition.left + offset.left, 
       top: currPosition.top + offset.top
     }
-    this.mouse = { left: e.pageX, top: e.pageY}
+    this.mouse = {left: e.pageX, top: e.pageY}
     draggingItem.position = newPosition
     draggingItem.updatePosition()
-    // calculate wether drag is over a DropHolder
+    // calculate whether drag is over a DropHolder
     const center = {
       horizontal: newPosition.top + draggingItem.size.height/2,
       vertical: newPosition.left + draggingItem.size.width/2
@@ -126,21 +127,25 @@ export class DragZone extends Component {
     
   }
   handleDragEnd(id) {
+    console.log('drag end')
     const draggingItem = this.dragItems[this.activeDragItem]
     this.activeDragItem = null
     const target = this.dropHolders[Object.keys(this.dropHolders).filter(id => this.dropHolders[id].active)[0]]
     const dropHolder = draggingItem.holder
     if (dropHolder && (dropHolder !== target)) {
+      console.log('1')
       dropHolder.virtualItems = dropHolder.virtualItems.filter(item => item.__id !== draggingItem.__id)
       this._reRenderDroppedItemPosition(dropHolder)
     }
     if (dropHolder && (dropHolder === target)) {
+      console.log('2')
       this._reRenderDroppedItemPosition(target)
       target.active = false
       target.onDrop()
       return
     }
     if (target) {
+      console.log('3')
       if (!target.virtualItems) { target.virtualItems = [] }
       target.virtualItems.push({ __id: draggingItem.__id, size: draggingItem.size })
       this._reRenderDroppedItemPosition(target)
