@@ -222,8 +222,12 @@ export class DragItem extends Component {
     } else {
       style.zIndex = this.zIndex
     }
+    let className = this.props.className || ''
+    if (this.state.active) {
+      className += ' w3-card-4'
+    }
     return (
-      <div  className = {this.props.className} style = { style }
+      <div  className = {className} style = {style}
             onMouseDown = {this.handleMouseDown}
             onMouseUp = {this.handleMouseUp}
             onMouseEnter = {this.handleMouseEnter}
