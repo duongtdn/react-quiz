@@ -46,7 +46,14 @@ export class DragZone extends Component {
         return React.cloneElement(el, {
           __id: Math.random().toString(36).substr(2,9),
           onMounted: (id, position, size, onDragEnterFn, onDragLeaveFn, onDropFn) => {
-            this.dropHolders[id] = { position, size, onDragEnter: onDragEnterFn, onDragLeave: onDragLeaveFn, onDrop: onDropFn }
+            this.dropHolders[id] = { 
+              position, 
+              size, 
+              onDragEnter: onDragEnterFn, 
+              onDragLeave: onDragLeaveFn, 
+              onDrop: onDropFn,
+              reCalculateDroppedItemPosition: this._reCalculateDroppedItemPosition
+            }
           }
         })
       }
@@ -56,12 +63,13 @@ export class DragZone extends Component {
       }
       if (children.length > 0) {
         if (el.type && el.type.name && el.type.name === 'DragItem') {
+          const __id = Math.random().toString(36).substr(2,9)
           return React.cloneElement(el, {
-            __id: Math.random().toString(36).substr(2,9),
+            __id,
             onDragStart: (id) => this.activeDragItem = id,
             onDragEnd: this.handleDragEnd,
             onMounted: (id, position, setPositionfn, size) => {
-              this.dragItems[id] = { position, size, updatePosition: function(){setPositionfn(this.position)} }
+              this.dragItems[id] = { __id, position, size, updatePosition: function(){setPositionfn(this.position)} }
             }
           }, children)
         } else {
@@ -120,33 +128,48 @@ export class DragZone extends Component {
   handleDragEnd(id) {
     const draggingItem = this.dragItems[this.activeDragItem]
     this.activeDragItem = null
-    const dropHolder = this.dropHolders[Object.keys(this.dropHolders).filter(id => this.dropHolders[id].active)[0]]
-    if (dropHolder) {
-      const position = this._calDropItemPosition(dropHolder)
-      draggingItem.position = position
-      draggingItem.updatePosition()
-      dropHolder.active = false
-      dropHolder.onDrop()
+    const target = this.dropHolders[Object.keys(this.dropHolders).filter(id => this.dropHolders[id].active)[0]]
+    const dropHolder = draggingItem.holder
+    if (dropHolder && (dropHolder !== target)) {
+      dropHolder.virtualItems = dropHolder.virtualItems.filter(item => item.__id !== draggingItem.__id)
+      this._reRenderDroppedItemPosition(dropHolder)
+    }
+    if (dropHolder && (dropHolder === target)) {
+      this._reRenderDroppedItemPosition(target)
+      target.active = false
+      target.onDrop()
+      return
+    }
+    if (target) {
+      if (!target.virtualItems) { target.virtualItems = [] }
+      target.virtualItems.push({ __id: draggingItem.__id, size: draggingItem.size })
+      this._reRenderDroppedItemPosition(target)
+      draggingItem.holder = target
+      target.active = false
+      target.onDrop()
+    } else {
+      draggingItem.holder = null
     }
   }
-  _renderVirtualDropHolder(enable, draggingItem, dropHolder) {
-    if (!enable) {
-      return null
+  _reRenderDroppedItemPosition(dropHolder) {
+    const positions = dropHolder.reCalculateDroppedItemPosition()
+    for (let i in positions) {
+      this.dragItems[i].position = {...positions[i]}
+      this.dragItems[i].updatePosition()
     }
-    const position = { top: dropHolder.position.top + 10, left: dropHolder.position.left + 10 }
-    const size = { width: draggingItem.size.width, height: draggingItem.size.height }
-    const style = {
-      position: 'absolute',
-      width: size.width + 'px', height: size.height + 'px',
-      top: position.top + 'px', left: position.left + 'px'
+    return this
+  }
+  _reCalculateDroppedItemPosition() {
+    const droppedItemPosition = {}
+    const position = { top: this.position.top + 10, left: this.position.left + 10 }
+    for (let i = 0; i < this.virtualItems.length; i++) {
+      const item = this.virtualItems[i]
+      droppedItemPosition[item.__id] = {...position}
+      position.left += (item.size.width + 10)
     }
-    return (
-      <div className = "w3-border w3-border-grey w3-pale-red" style = {style} />
-    )
+    return droppedItemPosition
   }
-  _calDropItemPosition(dropHolder) {
-    return { top: dropHolder.position.top + 10, left: dropHolder.position.left + 10 }
-  }
+
 }
 
 export class DragItem extends Component {
