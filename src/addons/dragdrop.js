@@ -63,13 +63,11 @@ export class DragZone extends Component {
       }
       if (children.length > 0) {
         if (el.type && el.type.name && el.type.name === 'DragItem') {
-          const __id = Math.random().toString(36).substr(2,9)
           return React.cloneElement(el, {
-            __id,
             onDragStart: (id) => this.activeDragItem = id,
             onDragEnd: this.handleDragEnd,
             onMounted: (id, position, setPositionfn, size) => {
-              this.dragItems[id] = { __id, position, size, updatePosition: function(){setPositionfn(this.position)} }
+              this.dragItems[id] = { id, position, size, updatePosition: function(){setPositionfn(this.position)} }
             }
           }, children)
         } else {
@@ -132,25 +130,26 @@ export class DragZone extends Component {
     const target = this.dropHolders[Object.keys(this.dropHolders).filter(id => this.dropHolders[id].active)[0]]
     const dropHolder = draggingItem.holder
     if (dropHolder && (dropHolder !== target)) {
-      dropHolder.virtualItems = dropHolder.virtualItems.filter(item => item.__id !== draggingItem.__id)
+      dropHolder.virtualItems = dropHolder.virtualItems.filter(item => item.id !== draggingItem.id)
       this._reRenderDroppedItemPosition(dropHolder)
     }
     if (dropHolder && (dropHolder === target)) {
       this._reRenderDroppedItemPosition(target)
       target.active = false
       target.onDrop()
-      return
-    }
-    if (target) {
-      if (!target.virtualItems) { target.virtualItems = [] }
-      target.virtualItems.push({ __id: draggingItem.__id, size: draggingItem.size })
-      this._reRenderDroppedItemPosition(target)
-      draggingItem.holder = target
-      target.active = false
-      target.onDrop()
     } else {
-      draggingItem.holder = null
+      if (target) {
+        if (!target.virtualItems) { target.virtualItems = [] }
+        target.virtualItems.push({ id: draggingItem.id, size: draggingItem.size })
+        this._reRenderDroppedItemPosition(target)
+        draggingItem.holder = target
+        target.active = false
+        target.onDrop()
+      } else {
+        draggingItem.holder = null
+      }
     }
+    this.updateAnswers()
   }
   _reRenderDroppedItemPosition(dropHolder) {
     const positions = dropHolder.reCalculateDroppedItemPosition()
@@ -165,12 +164,18 @@ export class DragZone extends Component {
     const position = { top: this.position.top + 10, left: this.position.left + 10 }
     for (let i = 0; i < this.virtualItems.length; i++) {
       const item = this.virtualItems[i]
-      droppedItemPosition[item.__id] = {...position}
+      droppedItemPosition[item.id] = {...position}
       position.left += (item.size.width + 10)
     }
     return droppedItemPosition
   }
-
+  updateAnswers() {
+    const answer = {}
+    for (let i in this.dragItems) {
+      answer[i] = {...this.dragItems[i].position}
+    }
+    this.props.updateAnswers && this.props.updateAnswers(answer)
+  }
 }
 
 export class DragItem extends Component {
@@ -199,7 +204,7 @@ export class DragItem extends Component {
     this.zIndex = node.style.zIndex
     const position = { left: node.offsetLeft, top: node.offsetTop }
     const size = {width: node.offsetWidth, height: node.offsetHeight}
-    this.props.onMounted && this.props.onMounted(this.props.__id, position, this.setPosition, size)
+    this.props.onMounted && this.props.onMounted(this.props.id, position, this.setPosition, size)
   }
 
   render() {
@@ -240,11 +245,11 @@ export class DragItem extends Component {
   }
   handleMouseDown(e) {
     this.setState({ active: true })
-    this.props.onDragStart && this.props.onDragStart(this.props.__id)
+    this.props.onDragStart && this.props.onDragStart(this.props.id)
   }
   handleMouseUp(e) {
     this.setState({ active: false })
-    this.props.onDragEnd && this.props.onDragEnd(this.props.__id)
+    this.props.onDragEnd && this.props.onDragEnd(this.props.id)
   }
   setPosition({left,top}) {
     this.setState({left, top})
