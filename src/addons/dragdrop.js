@@ -100,8 +100,8 @@ export class DragZone extends Component {
     draggingItem.updatePosition()
     // calculate whether drag is over a DropHolder
     const center = {
-      horizontal: newPosition.top + draggingItem.size.height/2,
-      vertical: newPosition.left + draggingItem.size.width/2
+      horizontal: newPosition.top + draggingItem.size.height,
+      vertical: newPosition.left + draggingItem.size.width
     }
     for (let id in this.dropHolders) {
       const dropHolder = this.dropHolders[id]
