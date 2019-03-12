@@ -17,7 +17,7 @@ export class DragZone extends Component {
     methods.forEach(method => this[method] = this[method].bind(this))
   }
   componentDidMount() {
-    this.children = this.genChildren()
+    this.children = this._genChildren()
     this.setState({ })
   }
   render() {
@@ -35,7 +35,7 @@ export class DragZone extends Component {
       </div>
     )
   }
-  genChildren() {
+  _genChildren() {
     // I should move this function to a lib as many addons will need it
     const cloneElementRecursively = (el) => {
       if (!el.type) {
