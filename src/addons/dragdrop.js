@@ -99,30 +99,36 @@ export class DragZone extends Component {
     draggingItem.position = newPosition
     draggingItem.updatePosition()
     // calculate whether drag is over a DropHolder
-    const center = {
-      horizontal: newPosition.top + draggingItem.size.height,
-      vertical: newPosition.left + draggingItem.size.width
-    }
     for (let id in this.dropHolders) {
       const dropHolder = this.dropHolders[id]
-      const threshold = {
-        upper: dropHolder.position.top, bottom: dropHolder.position.top + dropHolder.size.height,
-        left: dropHolder.position.left, right: dropHolder.position.left + dropHolder.size.width
-      }
-      if (center.horizontal > threshold.upper && center.horizontal < threshold.bottom &&
-          center.vertical > threshold.left && center.vertical < threshold.right) {
+      if (this._isOverZone(draggingItem, newPosition, dropHolder)) {
         if (!dropHolder.active) {
           dropHolder.active = true
           dropHolder.onDragEnter()
-        }        
+        }  
       } else {
         if (dropHolder.active) {
           dropHolder.active = false
           dropHolder.onDragLeave()
-        }       
+        } 
       }
     }
     
+  }
+  _isOverZone(dragItem, position, dropHolder) {
+    const item = {
+      top: position.top,
+      bottom: position.top + dragItem.size.height,
+      left: position.left,
+      right: position.left + dragItem.size.width
+    }
+    const zone = {
+      top: dropHolder.position.top, 
+      bottom: dropHolder.position.top + dropHolder.size.height,
+      left: dropHolder.position.left, 
+      right: dropHolder.position.left + dropHolder.size.width
+    }
+    return ( item.bottom > zone.top && item.top < zone.bottom && item.right > zone.left && item.left < zone.right )
   }
   handleDragEnd(id) {
     const draggingItem = this.dragItems[this.activeDragItem]
