@@ -27,7 +27,8 @@ class App extends Component {
       <div className="w3-container">
         Hello
         {/* <Quiz data={data} addons={addons} updateAnswers = { ans => console.log(ans) } />         */}
-        <DragZone className='w3-container w3-border w3-border-grey w3-padding' width='700px' height='500px' updateAnswers={ans => console.log(ans)}>
+        <DragZone className='w3-container w3-border w3-border-grey w3-padding' width='700px' height='500px' 
+                  updateAnswers={ans => console.log(ans)} >
           <div>
             <DragItem id="$1"> <div className="w3-container w3-red" style={{width: '100px', height: '100px'}}> Drag Me </div> </DragItem>
             <DragItem id="$2" left='120px' > <div className="w3-container w3-blue" style={{width: '150px', height: '100px'}}> Drag Me </div> </DragItem>

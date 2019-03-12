@@ -19,6 +19,8 @@ export class DragZone extends Component {
   componentDidMount() {
     this.children = this._genChildren()
     this.setState({ })
+    // setTimeout(() => this._updateDragItemPosition(), 1000)
+    // this._updateDragItemPosition()
   }
   render() {
     const style = {
@@ -36,6 +38,7 @@ export class DragZone extends Component {
     )
   }
   _genChildren() {
+    const answers = this._getStoredAnswers()
     // I should move this function to a lib as many addons will need it
     const cloneElementRecursively = (el) => {
       if (!el.type) {
@@ -63,12 +66,27 @@ export class DragZone extends Component {
       }
       if (children.length > 0) {
         if (el.type && el.type.name && el.type.name === 'DragItem') {
+          const position = {}
+          if (answers && answers[el.props.id]) {
+            const ans = answers[el.props.id]
+            position.left = ans.left + 'px'
+            position.top = ans.top + 'px'
+          }
           return React.cloneElement(el, {
             onDragStart: (id) => this.activeDragItem = id,
             onDragEnd: this.handleDragEnd,
             onMounted: (id, position, setPositionfn, size) => {
-              this.dragItems[id] = { id, position, size, updatePosition: function(){setPositionfn(this.position)} }
-            }
+              this.dragItems[id] = { 
+                id, 
+                position, 
+                size, 
+                updatePosition(position) {
+                  this.position = position
+                  setPositionfn(position)
+                } 
+              }
+            },
+            ...position
           }, children)
         } else {
           return React.cloneElement(el, {}, children)
@@ -78,6 +96,14 @@ export class DragZone extends Component {
       }
     }
     return React.Children.map(this.props.children, child => cloneElementRecursively(child))
+  }
+  _getStoredAnswers() {
+    // return undefined
+    return {
+      "$1": {top: 210, left: 110},
+      "$2": {top: 210, left: 220},
+      "$3": {top: 210, left: 380},
+    }
   }
   handleMouseDown(e) {
     this.mouse = { left: e.pageX, top: e.pageY}
@@ -96,8 +122,7 @@ export class DragZone extends Component {
       top: currPosition.top + offset.top
     }
     this.mouse = {left: e.pageX, top: e.pageY}
-    draggingItem.position = newPosition
-    draggingItem.updatePosition()
+    draggingItem.updatePosition(newPosition)
     // calculate whether drag is over a DropHolder
     for (let id in this.dropHolders) {
       const dropHolder = this.dropHolders[id]
@@ -160,8 +185,7 @@ export class DragZone extends Component {
   _reRenderDroppedItemPosition(dropHolder) {
     const positions = dropHolder.reCalculateDroppedItemPosition()
     for (let i in positions) {
-      this.dragItems[i].position = {...positions[i]}
-      this.dragItems[i].updatePosition()
+      this.dragItems[i].updatePosition({...positions[i]})
     }
     return this
   }
