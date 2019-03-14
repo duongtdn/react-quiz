@@ -98,12 +98,7 @@ export class DragZone extends Component {
     return React.Children.map(this.props.children, child => cloneElementRecursively(child))
   }
   _getStoredAnswers() {
-    // return undefined
-    return {
-      "$1": {top: 210, left: 110},
-      "$2": {top: 210, left: 220},
-      "$3": {top: 210, left: 380},
-    }
+    return this.props.answers
   }
   handleMouseDown(e) {
     this.mouse = { left: e.pageX, top: e.pageY}
