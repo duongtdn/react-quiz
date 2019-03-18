@@ -12,6 +12,7 @@ export class DragZone extends Component {
     const methods = [
       'handleMouseDown',
       'handleMouseMove',
+      'handleDragStart',
       'handleDragEnd'
     ]
     methods.forEach(method => this[method] = this[method].bind(this))
@@ -48,10 +49,11 @@ export class DragZone extends Component {
         // DropHolder has no child
         return React.cloneElement(el, {
           __id: Math.random().toString(36).substr(2,9),
-          onMounted: (id, position, size, onDragEnterFn, onDragLeaveFn, onDropFn) => {
+          onMounted: (id, position, size, dropLimit, onDragEnterFn, onDragLeaveFn, onDropFn) => {
             this.dropHolders[id] = { 
               position, 
               size, 
+              dropLimit,
               onDragEnter: onDragEnterFn, 
               onDragLeave: onDragLeaveFn, 
               onDrop: onDropFn,
@@ -73,7 +75,7 @@ export class DragZone extends Component {
             position.top = ans.top + 'px'
           }
           return React.cloneElement(el, {
-            onDragStart: (id) => this.activeDragItem = id,
+            onDragStart: this.handleDragStart,
             onDragEnd: this.handleDragEnd,
             onMounted: (id, position, setPositionfn, size) => {
               this.dragItems[id] = { 
@@ -150,10 +152,25 @@ export class DragZone extends Component {
     }
     return ( item.bottom > zone.top && item.top < zone.bottom && item.right > zone.left && item.left < zone.right )
   }
+  handleDragStart(id) {
+    this.activeDragItem = id
+    if (this.dragItems[id]) {
+      this.dragItems[id].startPosition = { ...this.dragItems[id].position }
+    }
+  }
   handleDragEnd(id) {
     const draggingItem = this.dragItems[this.activeDragItem]
     this.activeDragItem = null
     const target = this.dropHolders[Object.keys(this.dropHolders).filter(id => this.dropHolders[id].active)[0]]
+    // check dropLimit
+    if (target && target.dropLimit && target.virtualItems && target.virtualItems.length >= target.dropLimit) {
+      // dropLimit prevent dropping to this drop holder, dragging item is back to the position
+      // before dragging
+      draggingItem.updatePosition(draggingItem.startPosition)
+      target.active = false
+      target.onDrop()
+      return
+    }
     const dropHolder = draggingItem.holder
     if (dropHolder && (dropHolder !== target)) {
       dropHolder.virtualItems = dropHolder.virtualItems.filter(item => item.id !== draggingItem.id)
@@ -300,7 +317,8 @@ export class DropHolder extends Component {
     const node = this.myRef.current
     const position = { left: node.offsetLeft, top: node.offsetTop }
     const size = {width: node.offsetWidth, height: node.offsetHeight}
-    this.props.onMounted && this.props.onMounted(this.props.__id, position, size, this.onDragEnter, this.onDragLeave, this.onDrop)
+    const dropLimit = this.props.dropLimit
+    this.props.onMounted && this.props.onMounted(this.props.__id, position, size, dropLimit, this.onDragEnter, this.onDragLeave, this.onDrop)
   }
   render() {
     let _baseClassName = this.props.className || 'w3-container w3-border w3-border-grey w3-padding'
