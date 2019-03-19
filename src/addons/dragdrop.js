@@ -16,6 +16,7 @@ export class DragZone extends Component {
       'handleDragEnd'
     ]
     methods.forEach(method => this[method] = this[method].bind(this))
+    this.myRef = React.createRef()
   }
   componentDidMount() {
     this.children = this._genChildren()
@@ -33,6 +34,7 @@ export class DragZone extends Component {
       <div  className={this.props.className} style={ style }
             onMouseDown = {this.handleMouseDown}
             onMouseMove = {this.handleMouseMove}
+            ref={this.myRef}
       >
         {this.children || this.props.children}
       </div>
@@ -77,7 +79,7 @@ export class DragZone extends Component {
           return React.cloneElement(el, {
             onDragStart: this.handleDragStart,
             onDragEnd: this.handleDragEnd,
-            onMounted: (id, position, setPositionfn, size) => {
+            onMounted: (id, position, size, setPositionfn) => {
               this.dragItems[id] = { 
                 id, 
                 position, 
@@ -85,7 +87,7 @@ export class DragZone extends Component {
                 updatePosition(position) {
                   this.position = position
                   setPositionfn(position)
-                } 
+                }
               }
             },
             ...position
@@ -118,6 +120,24 @@ export class DragZone extends Component {
       left: currPosition.left + offset.left, 
       top: currPosition.top + offset.top
     }
+    // make sure drag in the boundary of DragZone
+    if (newPosition.left < 0) { 
+      newPosition.left = 0 
+      this.handleDragEnd(this.activeDragItem)
+    }
+    if (newPosition.left > this.myRef.current.offsetWidth - draggingItem.size.width) {
+      newPosition.left = this.myRef.current.offsetWidth - draggingItem.size.width
+      this.handleDragEnd(this.activeDragItem)
+    }
+    if (newPosition.top < 0) { 
+      newPosition.top = 0 
+      this.handleDragEnd(this.activeDragItem)
+    }
+    if (newPosition.top > this.myRef.current.offsetHeight - draggingItem.size.height) {
+      newPosition.top = this.myRef.current.offsetHeight - draggingItem.size.height
+      this.handleDragEnd(this.activeDragItem)
+    }
+
     this.mouse = {left: e.pageX, top: e.pageY}
     draggingItem.updatePosition(newPosition)
     // calculate whether drag is over a DropHolder
@@ -160,6 +180,7 @@ export class DragZone extends Component {
   }
   handleDragEnd(id) {
     const draggingItem = this.dragItems[this.activeDragItem]
+    if (!draggingItem) { return }
     this.activeDragItem = null
     const target = this.dropHolders[Object.keys(this.dropHolders).filter(id => this.dropHolders[id].active)[0]]
     // check dropLimit
@@ -246,7 +267,7 @@ export class DragItem extends Component {
     this.zIndex = node.style.zIndex
     const position = { left: node.offsetLeft, top: node.offsetTop }
     const size = {width: node.offsetWidth, height: node.offsetHeight}
-    this.props.onMounted && this.props.onMounted(this.props.id, position, this.setPosition, size)
+    this.props.onMounted && this.props.onMounted(this.props.id, position, size, this.setPosition)
   }
 
   render() {
@@ -296,7 +317,6 @@ export class DragItem extends Component {
   setPosition({left,top}) {
     this.setState({left, top})
   }
-
 }
 
 export class DropHolder extends Component {
