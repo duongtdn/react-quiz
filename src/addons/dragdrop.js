@@ -21,8 +21,6 @@ export class DragZone extends Component {
   componentDidMount() {
     this.children = this._genChildren()
     this.setState({ })
-    // setTimeout(() => this._updateDragItemPosition(), 1000)
-    // this._updateDragItemPosition()
   }
   render() {
     const style = {
@@ -103,7 +101,7 @@ export class DragZone extends Component {
     return React.Children.map(this.props.children, child => cloneElementRecursively(child))
   }
   _getStoredAnswers() {
-    return this.props.answers
+    return this.props.getSavedAnswers && this.props.getSavedAnswers()
   }
   handleMouseDown(e) {
     this.mouse = { left: e.pageX, top: e.pageY}
