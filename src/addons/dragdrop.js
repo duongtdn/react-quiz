@@ -51,11 +51,12 @@ export class DragZone extends Component {
         // DropHolder has no child
         return React.cloneElement(el, {
           __id: Math.random().toString(36).substr(2,9),
-          onMounted: (id, position, size, dropLimit, onDragEnterFn, onDragLeaveFn, onDropFn) => {
+          onMounted: (id, position, size, dropLimit, layout, onDragEnterFn, onDragLeaveFn, onDropFn) => {
             this.dropHolders[id] = { 
               position, 
               size, 
               dropLimit,
+              layout,
               onDragEnter: onDragEnterFn, 
               onDragLeave: onDragLeaveFn, 
               onDrop: onDropFn,
@@ -224,11 +225,17 @@ export class DragZone extends Component {
   }
   _reCalculateDroppedItemPosition() {
     const droppedItemPosition = {}
-    const position = { top: this.position.top + 10, left: this.position.left + 10 }
+    const spacing = this.layout && this.layout.spacing ? 
+                    {top: parseInt(this.layout.spacing.top), left: parseInt(this.layout.spacing.left)} : {top: 10, left:10}
+    const position = { top: this.position.top + spacing.top, left: this.position.left + spacing.left }
     for (let i = 0; i < this.virtualItems.length; i++) {
       const item = this.virtualItems[i]
       droppedItemPosition[item.id] = {...position}
-      position.left += (item.size.width + 10)
+      if (this.layout && this.layout.type === 'stack') {
+        position.top += (item.size.height + spacing.top)
+      } else {
+        position.left += (item.size.width + spacing.left)
+      }
     }
     return droppedItemPosition
   }
@@ -338,7 +345,8 @@ export class DropHolder extends Component {
     const position = { left: node.offsetLeft, top: node.offsetTop }
     const size = {width: node.offsetWidth, height: node.offsetHeight}
     const dropLimit = this.props.dropLimit
-    this.props.onMounted && this.props.onMounted(this.props.__id, position, size, dropLimit, this.onDragEnter, this.onDragLeave, this.onDrop)
+    const layout = this.props.layout
+    this.props.onMounted && this.props.onMounted(this.props.__id, position, size, dropLimit, layout, this.onDragEnter, this.onDragLeave, this.onDrop)
   }
   render() {
     let _baseClassName = this.props.className || 'w3-container w3-border w3-border-grey w3-padding'

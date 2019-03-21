@@ -42,7 +42,9 @@ class App extends Component {
             <DragItem id="$2" left='120px' > <div className="w3-container w3-blue" style={{width: '150px', height: '100px'}}> Drag Me </div> </DragItem>
             <DragItem id="$3" left='280px'> <div className="w3-container w3-green" style={{width: '100px', height: '100px'}}> Drag Me </div> </DragItem>
           </div>
-          <DropHolder width='390px' height='120px' top='200px' left='100px' dropLimit={2} />
+          <DropHolder layout={{ spacing: {top:10,left:20} }}width='190px' height='120px' top='150px' left='10px' dropLimit={1} />
+          <DropHolder width='390px' height='120px' top='300px' left='10px' dropLimit={2} />
+          <DropHolder layout={{ type: 'stack', spacing: {top:20,left:10} }} width='170px' height='380px' top='50px' left='500px' />
         </DragZone>
       </div>
     )
