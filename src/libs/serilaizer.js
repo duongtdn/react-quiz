@@ -44,6 +44,7 @@ export function deserialize(data, addons, updateAnswersFn, getSavedAnswersFn) {
   if (tree.props.getSavedAnswers) {
     tree.props.getSavedAnswers = getSavedAnswersFn
   }
+  tree.props.key = Math.random().toString(36).substr(2,9)
   return React.createElement(type, tree.props, children)
 
   function _recursiveCreateElement(el) {      
