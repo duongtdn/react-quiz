@@ -34,7 +34,7 @@ export function serialize(element) {
     }
 }
 
-export function deserialize(data, addons, updateAnswersFn, getSavedAnswersFn) {
+export function deserialize(data, addons, updateAnswersFn, getSavedAnswersFn, updateInternalStateFn, getSavedInternalStateFn) {
   const tree = JSON.parse(data)  
   const children = tree.children.map(el => _recursiveCreateElement(el))
   const type = addons[tree.type] || tree.type
@@ -43,6 +43,12 @@ export function deserialize(data, addons, updateAnswersFn, getSavedAnswersFn) {
   }
   if (tree.props.getSavedAnswers) {
     tree.props.getSavedAnswers = getSavedAnswersFn
+  }
+  if (tree.props.updateInternalState) {
+    tree.props.updateInternalState = updateInternalStateFn
+  }
+  if (tree.props.getSavedInternalState) {
+    tree.props.getSavedInternalState = getSavedInternalStateFn
   }
   tree.props.key = Math.random().toString(36).substr(2,9)
   return React.createElement(type, tree.props, children)
@@ -62,6 +68,12 @@ export function deserialize(data, addons, updateAnswersFn, getSavedAnswersFn) {
     }
     if (props.getSavedAnswers) {
       props.getSavedAnswers = getSavedAnswersFn
+    }
+    if (props.updateInternalState) {
+      props.updateInternalState = updateInternalStateFn
+    }
+    if (props.getSavedInternalState) {
+      props.getSavedInternalState = getSavedInternalStateFn
     }
     if (children.length > 0) {        
       return React.createElement(type, props, children)

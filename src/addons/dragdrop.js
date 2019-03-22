@@ -40,6 +40,7 @@ export class DragZone extends Component {
   }
   _genChildren() {
     const answers = this._getStoredAnswers()
+    const state = this._getStoredInternalState()
     // I should move this function to a lib as many addons will need it
     const cloneElementRecursively = (el) => {
       if (!el.type) {
@@ -48,9 +49,9 @@ export class DragZone extends Component {
       if (el.type && el.type.name && el.type.name === 'DropHolder') {
         // DropHolder has no child
         return React.cloneElement(el, {
-          __id: Math.random().toString(36).substr(2,9),
           onMounted: (id, position, size, dropLimit, layout, onDragEnterFn, onDragLeaveFn, onDropFn) => {
             this.dropHolders[id] = { 
+              id,
               position, 
               size, 
               dropLimit,
@@ -59,6 +60,10 @@ export class DragZone extends Component {
               onDragLeave: onDragLeaveFn, 
               onDrop: onDropFn,
               reCalculateDroppedItemPosition: this._reCalculateDroppedItemPosition
+            }
+            // init state if already stored
+            if (state && state.dropHolders[id] && state.dropHolders[id].virtualItems) {
+              this.dropHolders[id].virtualItems = state.dropHolders[id].virtualItems
             }
           }
         })
@@ -88,6 +93,10 @@ export class DragZone extends Component {
                   setPositionfn(position)
                 }
               }
+              // init state if already stored
+              if (state && state.dragItems[id] && state.dragItems[id].holder) {
+                this.dragItems[id].holder = state.dragItems[id].holder
+              }
             },
             ...position
           }, children)
@@ -102,6 +111,9 @@ export class DragZone extends Component {
   }
   _getStoredAnswers() {
     return this.props.getSavedAnswers && this.props.getSavedAnswers()
+  }
+  _getStoredInternalState() {
+    return this.props.getSavedInternalState && this.props.getSavedInternalState()
   }
   handleMouseDown(e) {
     this.mouse = { left: e.pageX, top: e.pageY}
@@ -191,7 +203,7 @@ export class DragZone extends Component {
       target.onDrop()
       return
     }
-    const dropHolder = draggingItem.holder
+    const dropHolder = this.dropHolders[draggingItem.holder]
     if (dropHolder && (dropHolder !== target)) {
       dropHolder.virtualItems = dropHolder.virtualItems.filter(item => item.id !== draggingItem.id)
       this._reRenderDroppedItemPosition(dropHolder)
@@ -205,14 +217,14 @@ export class DragZone extends Component {
         if (!target.virtualItems) { target.virtualItems = [] }
         target.virtualItems.push({ id: draggingItem.id, size: draggingItem.size })
         this._reRenderDroppedItemPosition(target)
-        draggingItem.holder = target
+        draggingItem.holder = target.id
         target.active = false
         target.onDrop()
       } else {
         draggingItem.holder = null
       }
     }
-    this.updateAnswers()
+    this.updateAnswers().updateInternalState()
   }
   _reRenderDroppedItemPosition(dropHolder) {
     const positions = dropHolder.reCalculateDroppedItemPosition()
@@ -243,6 +255,31 @@ export class DragZone extends Component {
       answer[i] = {...this.dragItems[i].position}
     }
     this.props.updateAnswers && this.props.updateAnswers(answer)
+    return this
+  }
+  updateInternalState() {
+    const dragItems = {}
+    for (let id in this.dragItems) {
+      const item = this.dragItems[id]
+      dragItems[id] = { id }
+      if (item.holder) {
+        dragItems[id].holder = item.holder
+      }
+    }
+
+    const dropHolders = {}
+    for (let id in this.dropHolders) {
+      const holder = this.dropHolders[id]
+      dropHolders[id] = { id }
+      if (holder.virtualItems) {
+        dropHolders[id].virtualItems = holder.virtualItems
+      }
+    }
+
+    const state = { dragItems, dropHolders }
+
+    this.props.updateInternalState && this.props.updateInternalState(state)
+    return this
   }
 }
 
@@ -344,7 +381,7 @@ export class DropHolder extends Component {
     const size = {width: node.offsetWidth, height: node.offsetHeight}
     const dropLimit = this.props.dropLimit
     const layout = this.props.layout
-    this.props.onMounted && this.props.onMounted(this.props.__id, position, size, dropLimit, layout, this.onDragEnter, this.onDragLeave, this.onDrop)
+    this.props.onMounted && this.props.onMounted(this.props.id, position, size, dropLimit, layout, this.onDragEnter, this.onDragLeave, this.onDrop)
   }
   render() {
     let _baseClassName = this.props.className || 'w3-container w3-border w3-border-grey w3-padding'

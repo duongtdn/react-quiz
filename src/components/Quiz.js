@@ -20,6 +20,13 @@ export default class Quiz extends Component {
     if (!problem) {
       throw new Error('Invalid data passed to Quiz. Missing problem')
     }
-    return deserialize(problem, this.props.addons, this.props.updateAnswers, this.props.getSavedAnswers)
+    return deserialize(
+      problem, 
+      this.props.addons, 
+      this.props.updateAnswers, 
+      this.props.getSavedAnswers, 
+      this.props.updateInternalState,
+      this.props.getSavedInternalState
+    )
   }
 }
