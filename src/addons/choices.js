@@ -50,10 +50,12 @@ export class MultipleChoices extends Component {
       }
       if (el.type && el.type.name && el.type.name === 'CheckBox') {
         return React.cloneElement(el, {
-          onMounted: (id, updateCheckedStatusFn) => { 
-            this._handlers[id] = updateCheckedStatusFn 
+          onMounted: (id, updateCheckedStatusFn) => {
+            this._handlers[id] = updateCheckedStatusFn
             if (this.answers[id]) {
-              updateCheckedStatusFn(this.answers[id]) 
+              this._handlers[id](true)
+            } else {
+              this.answers[id] = false
             }
           },
           onChange: e => this.handleChecked(el.props.id, e.target.checked)

@@ -27,7 +27,6 @@ const answers = [
     "$3": {top: 70, left: 510}
   }
 ]
-
 const states = [
   {},
   {
@@ -43,8 +42,8 @@ const states = [
     }
   }
 ]
-// const answers = undefined
-// const state = undefined
+// const answers = []
+// const states = []
 
 class App extends Component {
   constructor(props) {
