@@ -11,7 +11,7 @@ import {DragItem, DragZone, DropHolder} from '../src/addons/dragdrop'
 import {MultipleChoices, CheckBox} from '../src/addons/choices'
 
 const data = [
-  { problem: '{"props":{"updateAnswers":true,"getSavedAnswers":true},"type":"MultipleChoices","children":[{"type":"CheckBox","props":{"id":"$1","label":"Milk"}},{"type":"CheckBox","props":{"id":"$2","label":"Tea"}}]}' },
+  { problem: '{"props":{"updateAnswers":true,"getSavedAnswers":true},"type":"MultipleChoices","children":[{"type":"p","props":{},"children":[" You are in an awesome party, but you do not know anyone here. Suddently, a waitress is approaching you and ask you:"]},{"type":"p","props":{"className":"w3-text-blue-grey","style":{"fontStyle":"italic"}},"children":[" What kind of drinks do you like? "]},{"type":"CheckBox","props":{"id":"$1","label":"Milk"}},{"type":"CheckBox","props":{"id":"$2","label":"Tea"}},{"type":"CheckBox","props":{"id":"$3","label":"Wine"}}]}' },
   { problem: '{"props":{"className":"w3-container w3-border w3-border-grey w3-padding","width":"700px","height":"500px","updateAnswers":true,"getSavedAnswers":true,"updateInternalState":true,"getSavedInternalState":true},"type":"DragZone","children":[{"type":"div","props":{},"children":[{"type":"DragItem","props":{"id":"$1"},"children":[" ",{"type":"div","props":{"className":"w3-container w3-red","style":{"width":"100px","height":"100px"}},"children":[" Drag Me "]}," "]},{"type":"DragItem","props":{"id":"$2","left":"120px"},"children":[" ",{"type":"div","props":{"className":"w3-container w3-blue","style":{"width":"150px","height":"100px"}},"children":[" Drag Me "]}," "]},{"type":"DragItem","props":{"id":"$3","left":"280px"},"children":[" ",{"type":"div","props":{"className":"w3-container w3-green","style":{"width":"100px","height":"100px"}},"children":[" Drag Me "]}," "]}]},{"type":"DropHolder","props":{"id":"$dh_1","layout":{"spacing":{"top":10,"left":20}},"width":"190px","height":"120px","top":"150px","left":"10px","dropLimit":1}},{"type":"DropHolder","props":{"id":"$dh_2","width":"390px","height":"120px","top":"300px","left":"10px","dropLimit":2}},{"type":"DropHolder","props":{"id":"$dh_3","layout":{"type":"stack","spacing":{"top":20,"left":10}},"width":"170px","height":"380px","top":"50px","left":"500px"}}]}' },
 ]
 
@@ -19,6 +19,7 @@ const answers = [
   {
     "$1": false,
     "$2": true,
+    "$3": true,
   },
   {
     "$1": {top: 310, left: 20},
@@ -72,12 +73,15 @@ class App extends Component {
     //   </DragZone>
     // ))
 
-    // console.log(serialize(
-    //   <MultipleChoices updateAnswers  getSavedAnswers >
-    //     <CheckBox id="$1" label='Milk' />
-    //     <CheckBox id="$2" label='Tea'/>
-    //   </MultipleChoices>
-    // ))
+    console.log(serialize(
+      <MultipleChoices updateAnswers  getSavedAnswers >
+        <p> You are in an awesome party, but you do not know anyone here. Suddently, a waitress is approaching you and ask you:</p>
+        <p className='w3-text-blue-grey' style={{fontStyle: 'italic'}}> What kind of drinks do you like? </p>
+        <CheckBox id="$1" label='Milk' />
+        <CheckBox id="$2" label='Tea'/>
+        <CheckBox id="$3" label='Wine'/>
+      </MultipleChoices>
+    ))
   }
   render() {
     const index = this.state.index
