@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rm -rf dist/",
     "build": "babel src --out-dir dist --source-maps",
-    "start": "webpack-dev-server --config webpack.dev.config.js  --port 3500 --host 0.0.0.0 --watch-poll"
+    "start": "webpack-dev-server --config webpack.dev.config.js  --port 3200 --host 0.0.0.0 --watch-poll"
   },
   "repository": {
     "type": "git",

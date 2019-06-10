@@ -9,10 +9,12 @@ import { serialize, deserialize } from '../src/libs/serilaizer'
 import addons from '../src/addons/'
 import {DragItem, DragZone, DropHolder} from '../src/addons/dragdrop'
 import {MultipleChoices, CheckBox} from '../src/addons/choices'
+import {TextGroup, TextBox} from '../src/addons/text'
 
 const data = [
   { problem: '{"props":{"updateAnswers":true,"getSavedAnswers":true},"type":"MultipleChoices","children":[{"type":"p","props":{},"children":[" You are in an awesome party, but you do not know anyone here. Suddently, a waitress is approaching you and ask you:"]},{"type":"p","props":{"className":"w3-text-blue-grey","style":{"fontStyle":"italic"}},"children":[" What kind of drinks do you like? "]},{"type":"CheckBox","props":{"id":"$1","label":"Milk"}},{"type":"CheckBox","props":{"id":"$2","label":"Tea"}},{"type":"CheckBox","props":{"id":"$3","label":"Wine"}}]}' },
   { problem: '{"props":{"className":"w3-container w3-border w3-border-grey w3-padding","width":"700px","height":"500px","updateAnswers":true,"getSavedAnswers":true,"updateInternalState":true,"getSavedInternalState":true},"type":"DragZone","children":[{"type":"div","props":{},"children":[{"type":"DragItem","props":{"id":"$1"},"children":[" ",{"type":"div","props":{"className":"w3-container w3-red","style":{"width":"100px","height":"100px"}},"children":[" Drag Me "]}," "]},{"type":"DragItem","props":{"id":"$2","left":"120px"},"children":[" ",{"type":"div","props":{"className":"w3-container w3-blue","style":{"width":"150px","height":"100px"}},"children":[" Drag Me "]}," "]},{"type":"DragItem","props":{"id":"$3","left":"280px"},"children":[" ",{"type":"div","props":{"className":"w3-container w3-green","style":{"width":"100px","height":"100px"}},"children":[" Drag Me "]}," "]}]},{"type":"DropHolder","props":{"id":"$dh_1","layout":{"spacing":{"top":10,"left":20}},"width":"190px","height":"120px","top":"150px","left":"10px","dropLimit":1}},{"type":"DropHolder","props":{"id":"$dh_2","width":"390px","height":"120px","top":"300px","left":"10px","dropLimit":2}},{"type":"DropHolder","props":{"id":"$dh_3","layout":{"type":"stack","spacing":{"top":20,"left":10}},"width":"170px","height":"380px","top":"50px","left":"500px"}}]}' },
+  { problem: '{"props":{"updateAnswers":true,"getSavedAnswers":true},"type":"TextGroup","children":[{"type":"p","props":{},"children":[" What is your major "]},{"type":"TextBox","props":{"id":"$1","className":"w3-light-grey"}},{"type":"p","props":{},"children":[" In the year ",{"type":"TextBox","props":{"id":"$2","className":"w3-pale-yellow","style":{"display":"inline-block","width":"60px"}}}," you have graduated. "]}]}' },
 ]
 
 const answers = [
@@ -25,6 +27,9 @@ const answers = [
     "$1": {top: 310, left: 20},
     "$2": {top: 160, left: 30},
     "$3": {top: 70, left: 510}
+  },
+  {
+    "$1": "Computer Science"
   }
 ]
 const states = [
@@ -72,14 +77,21 @@ class App extends Component {
     //   </DragZone>
     // ))
 
+    // console.log(serialize(
+    //   <MultipleChoices updateAnswers  getSavedAnswers >
+    //     <p> You are in an awesome party, but you do not know anyone here. Suddently, a waitress is approaching you and ask you:</p>
+    //     <p className='w3-text-blue-grey' style={{fontStyle: 'italic'}}> What kind of drinks do you like? </p>
+    //     <CheckBox id="$1" label='Milk' />
+    //     <CheckBox id="$2" label='Tea'/>
+    //     <CheckBox id="$3" label='Wine'/>
+    //   </MultipleChoices>
+    // ))
     console.log(serialize(
-      <MultipleChoices updateAnswers  getSavedAnswers >
-        <p> You are in an awesome party, but you do not know anyone here. Suddently, a waitress is approaching you and ask you:</p>
-        <p className='w3-text-blue-grey' style={{fontStyle: 'italic'}}> What kind of drinks do you like? </p>
-        <CheckBox id="$1" label='Milk' />
-        <CheckBox id="$2" label='Tea'/>
-        <CheckBox id="$3" label='Wine'/>
-      </MultipleChoices>
+      <TextGroup updateAnswers getSavedAnswers  >
+        <p> What is your major </p>
+        <TextBox id='$1' className='w3-light-grey' />
+        <p> In the year <TextBox id='$2' className='w3-pale-yellow' style={{display: 'inline-block', width: '60px'}}/> you have graduated. </p>
+      </TextGroup>
     ))
   }
   render() {
