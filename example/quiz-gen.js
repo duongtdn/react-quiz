@@ -53,9 +53,9 @@ const choice1 = ({num, text1, text2, labels }) => {
       <MultipleChoices updateAnswers  getSavedAnswers >
         <p> {text1}</p>
         <p className='w3-text-blue-grey' style={{fontStyle: 'italic'}}> {text2} </p>
-        <CheckBox id="$1" label={labels[0]} />
-        <CheckBox id="$2" label={labels[1]} />
-        <CheckBox id="$3" label={labels[2]} />
+        <CheckBox id="$1" label={labels[0]} /> <br />
+        <CheckBox id="$2" label={labels[1]} /> <br />
+        <CheckBox id="$3" label={labels[2]} /> <br />
       </MultipleChoices>
     </TextGroup>
   )
@@ -63,28 +63,30 @@ const choice1 = ({num, text1, text2, labels }) => {
 
 const dragdrop0 = ({num, text, labels}) => {
   return (
-    <DragZone className='w3-container w3-border w3-border-grey w3-padding'
+    <div>
+      <h4 className='w3-text-orange'> Quiz-type: DragDrop - ${num} </h4>
+      <p> {text} </p>
+      <DragZone className='w3-container w3-border w3-border-grey w3-padding'
               width='280px' height='300px' style={{margin: 'auto'}}
               updateAnswers 
               getSavedAnswers
               updateInternalState 
               getSavedInternalState 
-    >
-      <div>
-        <h4 className='w3-text-orange'> Quiz-type: DragDrop - ${num} </h4>
-        <p> {text} </p>
-        <DragItem id="$1" left='10px' top='20px'> 
-          <div className="w3-container w3-red" style={{width: '100px', height: '30px'}}> {labels[0]} </div> 
-        </DragItem>
-        <DragItem id="$2" left='10px' top='80px'> 
-          <div className="w3-container w3-blue" style={{width: '100px', height: '30px'}}> {labels[1]} </div> 
-        </DragItem>
-        <DragItem id="$3" left='10px' top='140px'> 
-          <div className="w3-container w3-green" style={{width: '100px', height: '30px'}}> {labels[2]} </div> 
-        </DragItem>
-      </div>
-      <DropHolder id="$dh_1" layout={{ type: 'stack', spacing: {top:10,left:10} }} width='120px' height='150px' top='20px' left='140px' />
-    </DragZone>
+      >
+        <div>
+          <DragItem id="$1" left='10px' top='20px'>
+            <div className="w3-container w3-red" style={{width: '100px', height: '30px'}}> {labels[0]} </div>
+          </DragItem>
+          <DragItem id="$2" left='10px' top='80px'>
+            <div className="w3-container w3-blue" style={{width: '100px', height: '30px'}}> {labels[1]} </div>
+          </DragItem>
+          <DragItem id="$3" left='10px' top='140px'>
+            <div className="w3-container w3-green" style={{width: '100px', height: '30px'}}> {labels[2]} </div>
+          </DragItem>
+        </div>
+        <DropHolder id="$dh_1" layout={{ type: 'stack', spacing: {top:10,left:10} }} width='120px' height='150px' top='20px' left='140px' />
+      </DragZone>
+    </div>
   )
 }
 
@@ -181,8 +183,8 @@ function genQuiz() {
       fs.writeFile( filename, problem, err => { if (err) throw err } )
       console.log(`   --> created file: ${filename}`)
       const quiz = {
-        problem: filename,
-        answers: answers.text
+        problem: `${type}-${index}.${i}`,
+        correctAnswers: answers[type]
       }
       questions.push(quiz)
     }
