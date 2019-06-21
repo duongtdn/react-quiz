@@ -6,6 +6,7 @@
   "scripts": {
     "clean": "rm -rf dist/",
     "build": "babel src --out-dir dist --source-maps",
+    "gen-test": "babel example/quiz-gen.js --out-file dist/quiz-gen.js --source-maps && node dist/quiz-gen.js",
     "start": "webpack-dev-server --config webpack.dev.config.js  --port 3200 --host 0.0.0.0 --watch-poll"
   },
   "repository": {

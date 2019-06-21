@@ -1,12 +1,13 @@
 "use strict"
 
+const fs = require('fs')
 const React = require('react')
 
-const { serialize } = require('../src/libs/serilaizer')
+const { serialize } = require('./libs/serilaizer')
 
-const {DragItem, DragZone, DropHolder} = require('../src/addons/dragdrop')
-const {MultipleChoices, CheckBox} = require('../src/addons/choices')
-const {TextGroup, TextBox} = require('../src/addons/text')
+const {DragItem, DragZone, DropHolder} = require('./addons/dragdrop')
+const {MultipleChoices, CheckBox} = require('./addons/choices')
+const {TextGroup, TextBox} = require('./addons/text')
 
 const text0 = ({num, text }) => {
   return (
@@ -136,44 +137,57 @@ function genQuiz() {
     'Fire Emblem',
     'Dragon Quest'
   ]
-  // generate text 0
-  for (let i=0; i<10; i++) {
-    const quiz = {
-      problem: serialize(template.text[0]({ num: `TA${i}`, text: text0s[i] })),
-      answers: answers.text
-    }
-    console.log(quiz)
+
+  if (!fs.existsSync('dist/quizzes')){
+    fs.mkdirSync('dist/quizzes')
   }
-  // generate text 1
-  for (let i=0; i<10; i++) {
-    const quiz = {
-      problem: serialize(template.text[1]({ num: `TB${i}`, text1: text1s[i], text2: 'Thank you and regards' })),
-      answers: answers.text
-    }
-    console.log(quiz)
+
+  const qbanks = []
+
+  qbanks.push(createQbank('_qtxt_0_', 'TextBox Question Type - 0', 'text', 0,
+    (i) => {return {num: `TA${i}`, text: text0s[i]}})
+  )
+  qbanks.push(createQbank('_qtxt_1_', 'TextBox Question Type - 1', 'text', 1,
+    (i) => {return {num: `TB${i}`, text1: text1s[i], text2: 'Thank you and regards'}})
+  )
+  qbanks.push(createQbank('_qmch_0_', 'MultipleChoice Question Type - 0', 'choice', 0,
+    (i) => {return {num: `CA${i}`, text: 'Please select one of the following options', labels: [text0s[i], text1s[i], 'Both']}})
+  )
+  qbanks.push(createQbank('_qmch_1_', 'MultipleChoice Question Type - 1', 'choice', 1,
+    (i) => {return {num: `CB${i}`, text1: 'Please select one of the following options', text2: 'The right answer is the middle one', labels: [text0s[i], text1s[i], 'None']}})
+  )
+  qbanks.push(createQbank('_qdrd_0_', 'DragDrop Question Type - 0', 'dragdrop', 0,
+    (i) => {return {num: `DDA${i}`, text: 'Drag in the order Red - Blue - Green', labels: ['Red', 'Blue', 'Green']}})
+  )
+
+  console.info('Creating Qbanks in file qbanks.json')
+  fs.writeFile( 'dist/quizzes/qbanks.json', JSON.stringify(qbanks), err => { if (err) throw err } )
+
+  console.info('Done!!!')
+
+  function createProblem(type, index, args) {
+    return serialize(template[type][index](args))
   }
-  // generate choice 0
-  for (let i=0; i<10; i++) {
-    const quiz = {
-      problem: serialize(template.choice[0]({ num: `CA${i}`, text: 'Please select one of the following options', labels: [text0s[i], text1s[i], 'Both'] })),
-      answers: answers.text
+  function createQbank(qbankId, title, type, index, genArgs) {
+    console.info(`Generating qbank ${qbankId}`)
+    const qbank = {
+      qbankId, title,
+      topicId: '_demo_test_',
     }
-    console.log(quiz)
-  }
-  // generate choice 1
-  for (let i=0; i<10; i++) {
-    const quiz = {
-      problem: serialize(template.choice[1]({ num: `CB${i}`, text1: 'Please select one of the following options', text2: 'The right answer is the middle one', labels: [text0s[i], text1s[i], 'None'] })),
-      answers: answers.text
+    const questions = []
+    for (let i=0; i<10; i++) {
+      const problem = createProblem(type, index, genArgs(i))
+      const filename = `dist/quizzes/${type}-${index}.${i}`
+      fs.writeFile( filename, problem, err => { if (err) throw err } )
+      console.log(`   --> created file: ${filename}`)
+      const quiz = {
+        problem: filename,
+        answers: answers.text
+      }
+      questions.push(quiz)
     }
-    console.log(quiz)
+    qbank.questions = questions
+    return qbank
   }
-  // generate dradrop
-  for (let i=0; i<10; i++) {
-    const quiz = {
-      problem: serialize(template.dragdrop[0]({ num: `DDA${i}`, text: 'Drag in the order Red - Blue - Green', labels: ['Red', 'Blue', 'Green'] })),
-      answers: answers.text
-    }
-    console.log(quiz)
-  }
+
 }
