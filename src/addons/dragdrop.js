@@ -26,7 +26,8 @@ export class DragZone extends Component {
     const style = {
       width: this.props.width || '500px',
       height: this.props.height || '500px',
-      position: 'relative'
+      position: 'relative',
+      ...this.props.style
     }
     return (
       <div  className={this.props.className} style={ style }
