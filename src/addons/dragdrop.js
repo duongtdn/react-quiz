@@ -33,6 +33,8 @@ export class DragZone extends Component {
       <div  className={this.props.className} style={ style }
             onMouseDown = {this.handleMouseDown}
             onMouseMove = {this.handleMouseMove}
+            onTouchStart = {this.handleMouseDown}
+            onTouchMove = {this.handleMouseMove}
             ref={this.myRef}
       >
         {this.children || this.props.children}
@@ -117,10 +119,12 @@ export class DragZone extends Component {
     return this.props.getSavedInternalState && this.props.getSavedInternalState()
   }
   handleMouseDown(e) {
+    if (e.changedTouches) { e = e.changedTouches[0] }
     this.mouse = { left: e.pageX, top: e.pageY}
     this.handleMouseMove(e) // call mouse move to update dropHolder active
   }
   handleMouseMove(e) {
+    if (e.changedTouches) { e = e.changedTouches[0] }
     if (!this.activeDragItem) {
       return
     }
@@ -342,7 +346,8 @@ export class DragItem extends Component {
       <div  className = {className} style = {style}
             onMouseDown = {this.handleMouseDown}
             onMouseUp = {this.handleMouseUp}
-            onMouseEnter = {this.handleMouseEnter}
+            onTouchStart = {this.handleMouseDown}
+            onTouchEnd = {this.handleMouseUp}
             ref={this.myRef}
       >
         {this.props.children}
